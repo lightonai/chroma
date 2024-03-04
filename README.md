@@ -1,3 +1,19 @@
+# Reason of this fork
+By default, Chroma does not perform exact search but use [HNSW](https://www.pinecone.io/learn/series/faiss/hnsw/), to perform approximate neighbor search.
+The issue is that, as discussed [here](https://github.com/chroma-core/chroma/issues/1205), the default parameters can be quite bad, resulting in really bad results unless n_results is large enough.
+Returning more results gives better results because the number of searched element is scaled depending on [max(search_ef, n_returns)](https://github.com/nmslib/hnswlib/blob/3f3429661187e4c24a490a0f148fc6bc89042b3d/hnswlib/hnswalg.h#L1308).
+To get better results without returning a lot of elements, one can simply scale the ```hnsw:search_ef``` parameter in the DB metadata during creation: ```collection_chroma = chroma_client.create_collection(name="db_name", metadata={"hnsw:space": "cosine", "hnsw:search_ef": 512})```.
+
+However, once created, editing this parameter is hard (the ```collection.modify()``` modifies it, but is not compatible with keeping cosine distance and does not seems to work). The proposed (not optimal) fix is to hard-set this value during the loading of the index.
+
+
+
+
+
+<br><br>
+
+
+
 <p align="center">
   <a href="https://trychroma.com"><img src="https://user-images.githubusercontent.com/891664/227103090-6624bf7d-9524-4e05-9d2c-c28d5d451481.png" alt="Chroma logo"></a>
 </p>
